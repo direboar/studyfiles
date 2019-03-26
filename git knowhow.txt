@@ -1,0 +1,151 @@
+# 関連のノウハウ蓄積
+
+## Git入門資料
+
+~~~
+
+Gitの入門には、以下の動画を眺めることをお勧めします。
+ いつやるの？Git入門 
+ https://vimeo.com/80420326
+Gitの主要概念が分かりやすく説明されている…はずです。
+
+私はGit強くないですが、上記動画を眺めてから、git bash上で
+   git add -A
+   git commit
+   git push -u origin master
+   git pull (git fetch)
+   git checkout
+   gitk 
+   git reset --hard
+
+あたりの動作が把握できるようになってから、そんなに怖くなくなりました。
+操作に迷ったら、ぐぐるかGITポケットリファレンス（本、私が持ってます、見たければ貸します）で解決してます。
+リモートリポジトリとローカルリポジトリが乖離すると不安になるので、定期的にpullすると安心できるのではないでしょうか。
+
+~~~
+
+## Git参考資料
+なんかあれば。。。
+
+
+## 各人ノウハウなど
+
+### git difftool
+gitでdiffを取ると、差分の結果が一つのファイルにべたっと吐き出されて非常に見づらいです。
+対応策として、git difftoolを使用する方法があります。
+
+~~~
+
+１．前提
+WinMergeがインストール済みであること。（環境フォルダに転がってるはず）
+
+２．設定
+C:\Users\XXXX（ユーザ名）\.gitconfigに以下の設定を追加する。
+
+[core]
+# less options moved to '.bashrc', see section of 'export'; e.g. 'export LESS=-qRiFM'
+# TBD add '-F --quit-if-one-screen', '-X --no-init'(termcap), '-XXX --mark-wrong-char'
+	pager = less
+
+[merge]
+	tool = WinMerge
+[mergetool]
+	prompt = false
+[mergetool "WinMerge"]
+	path = C:/Program Files/WinMerge/WinMergeU.exe
+# TODO 3pane-3way
+#	cmd = \"C:/Program Files/WinMerge/WinMergeU.exe\" \"$MERGED\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"
+	cmd = \"C:/Program Files/WinMerge/WinMergeU.exe\" \"$MERGED\"
+	trustExitCode = false
+
+[diff]
+	tool = WinMerge
+	guitool = WinMerge
+[difftool]
+	prompt = false
+# XXX unwork, as well 'git --no-pager ...' and 'GIT_PAGER=cat' on .bashrc
+#     work => append 'pager = less -F' to [core] section
+#	pager = false
+[difftool "WinMerge"]
+	path = C:/Program Files/WinMerge/WinMergeU.exe
+#                                                                                             \"$LOCAL\" \"$BASE\"
+	cmd = \"C:/Program Files/WinMerge/WinMergeU.exe\" -e -x -ub -wl -dl \"Base\" -dr \"Mine\" \"$LOCAL\" \"$REMOTE\"
+	trustExitCode = false
+
+
+３．実行方法
+
+たとえばcmncmp-example直下全量のmasterとの差分を見たい場合。
+git difftool --dir-diff master
+とかやると、WinDiffで見やすい形で表示される。
+
+その他はまだ試行錯誤中なのでググってください。
+http://ptech.g.hatena.ne.jp/noromanba/20121224/1356422094
+
+~~~
+
+### よく使うgit diffコマンド
+毎回ググるのが面倒なのでwikiにコピペ。
+
+~~~
+
+現在のブランチと master ブランチとの差分を全て確認。
+git diff master
+
+hoge ブランチと fuga ブランチの差分を全て確認。
+git diff hoge fuga
+
+hoge ブランチと fuga ブランチの差分のファイル名のみを表示。
+git diff --name-only hoge fuga
+
+hoge ブランチの foo.txt と fuga ブランチの foo.txt の差分を確認。
+git diff hoge:foo.txt fuga:foo.txt
+
+上記のような hoge ブランチと fuga ブランチの同じファイル（foo.txt）を比較する場合は、以下のようにも書けます。
+git diff hoge fuga foo.txt
+
+~~~
+
+
+### 飯塚のgit bash メモ
+
+飯塚はgitのeclipse pluginにはトラウマがあるので、git bashつかってます。
+とーたすはリポジトリビューアとして使ってますが、eclipse pluginではまった記憶からGUI信用してなくてあまり使ってないです。。。
+
+~~~
+
+git get     
+git status  … ファイルがGIT上どう扱われてるかの状態を確認する。（コミットすべきものがあるかどうか、等）
+git pull    … リモートリポジトリから最新とってワークスペースにマージ。
+git fetch   … リモートリポジトリから最新とる
+git add -A  … 修正ファイルを全部addする。
+git commit  … addしたファイルをローカルリポジトリにコミットする。
+git stash   … 一時退避。その後戻して上書きとか。使ったことないな。。。
+git push -u origin master masterブランチにpushする。ふだんはこれ、
+git push -u origin ブランチ名 ブランチ名を指定するとmaster以外のブランチにpushされる。
+
+git reset --soft …headを戻す
+git reset --hard …headを戻してワークスペースも戻す。困ったらこれ叩くと、修正内容が前回のコミット状態に戻る
+
+gitk　…　gitの変更差分をみる簡単なGUI。git commit前にながめて安心する。UIはイマイチなので、差分みるならtortoseのほうが良いと思う…
+
+特定のファイルを取り直す
+git update-index --assume-unchanged JWSample_OP_OFB/src/main/cmd/windows/common_env.bat
+git update-index --assume-unchanged src/main/config/Justware-SAMPLE-conf/client/config/JWAZZ_JustwareConf.properties
+
+リモートリポジトリから、ローカルリポジトリを作成。
+git clone file:////192.168.14.1/share/git/cmncmp
+git clone file:////192.168.14.1/share/git/cmncmp-example
+
+assume-unchanged
+http://qiita.com/usamik26/items/56d0d3ba7a1300625f92
+
+日常的には以下の操作でコミット～pushまでまとめてやっちゃうかんじ。
+git status …登録したいファイルが差分に出てること確認
+git add -A
+git status …登録したいファイルが全部緑になってるの確認
+gitk       …念のため変更差分を確認
+git commit
+git push -u origin master
+
+~~~
